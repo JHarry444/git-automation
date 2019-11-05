@@ -1,6 +1,6 @@
 {
   "name": "jharry-git-automation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automates the creation of repositories from a template and restricts access to master.",
   "repository": "https://github.com/JHarry444/git-automation.git",
   "main": "index.js",

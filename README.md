@@ -27,6 +27,6 @@ const details = [{
     username: 'username'
 }];
 
-const createRepos = require('./repos');
+const createRepos = require('jharry-git-automation');
 
 createRepos(apiKey, user, template, details);

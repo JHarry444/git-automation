@@ -1,12 +1,15 @@
 const axios = require('axios');
 
 function setup(apiKey, user, template, details) {
-    details.forEach(dets => {
-        createRepo(apiKey, user, template, dets);
+    details.forEach(username => {
+        createRepo(apiKey, user, template, username)
+            .then(() => addCollaborator(apiKey, user, username))
+            .then(() => setRules(apiKey, user, username))
+            .catch(err => console.warn('Warning -', err));
     });
 }
 
-function createRepo(apiKey, user, template, details) {
+function createRepo(apiKey, user, template, username) {
     const settings = {
         "async": true,
         "crossDomain": true,
@@ -19,22 +22,23 @@ function createRepo(apiKey, user, template, details) {
         },
         "data": JSON.stringify({
             "owner": user,
-            "name": `${getRepoFromEmail(details.email)}`,
+            "name": `${getRepoFromUser(username)}`,
             "description": "Assessment Repository",
             "private": false
         })
-    }
+    };
+    return axios(settings);
+}
 
-    axios(settings).then(res => addCollaborator(apiKey, user, details)).catch(err => console.error(err));
+function getRepoFromUser(user) {
+    return `${user}_assessment`;
 }
-function getRepoFromEmail(email) {
-    return `${email.substring(0, email.indexOf('.'))}_${email.substring(email.indexOf('.') + 1, email.indexOf('@'))}_assessment`;
-}
-function addCollaborator(apiKey, user, { email, username }) {
+
+function addCollaborator(apiKey, user, username) {
     const settings = {
         "async": true,
         "crossDomain": true,
-        "url": `https://api.github.com/repos/${user}/${getRepoFromEmail(email)}/collaborators/${username}?permission=push`,
+        "url": `https://api.github.com/repos/${user}/${getRepoFromUser(username)}/collaborators/${username}?permission=push`,
         "method": "PUT",
         "headers": {
             "Accept": "application/vnd.github.hellcat-preview+json",
@@ -42,14 +46,14 @@ function addCollaborator(apiKey, user, { email, username }) {
         }
     }
 
-    axios(settings).then(res => setRules(apiKey, user, email)).catch(err => console.error(err));
+    return axios(settings);
 }
 
-function setRules(apiKey, user, email) {
+function setRules(apiKey, user, username) {
     const settings = {
         async: true,
         crossDomain: true,
-        url: `https://api.github.com/repos/${user}/${getRepoFromEmail(email)}/branches/master/protection`,
+        url: `https://api.github.com/repos/${user}/${getRepoFromUser(username)}/branches/master/protection`,
         method: "PUT",
         headers: {
             "Accept": "application/vnd.github.luke-cage-preview+json",
@@ -58,9 +62,6 @@ function setRules(apiKey, user, email) {
         },
         processData: false,
         data: JSON.stringify({ required_status_checks: null, enforce_admins: true, required_pull_request_reviews: { dismiss_stale_reviews: true, require_code_owner_reviews: true, required_approving_review_count: 1 }, restrictions: null })
-    }
-
-    axios(settings).catch(err => console.error(err));
+    };
+    return axios(settings);
 }
-
-module.exports = setup;

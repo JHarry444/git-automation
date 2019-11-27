@@ -22,10 +22,7 @@ const apiKey = 'MY_KEY';
 const user = 'my_user';
 const template = 'my_template_name';
 
-const details = [{
-    email: 'firstname.lastname@qa.com',
-    username: 'username'
-}];
+const details = ['username'];
 
 const createRepos = require('jharry-git-automation');
 

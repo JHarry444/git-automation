@@ -1,4 +1,4 @@
-const setupRepos = require('./repos');
+const setupRepos = require('./scripts/repoSetup');
 
 const {apiKey, user, template, usernames} = require("./constants.json");
 

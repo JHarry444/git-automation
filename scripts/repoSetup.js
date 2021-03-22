@@ -30,10 +30,6 @@ const createRepo = (apiKey, owner, template, username, private) => {
     });
 }
 
-const getRepoFromUser = (user) => {
-    return `${user}_assessment`;
-}
-
 const addCollaborator = (apiKey, owner, username) => {
     return request('PUT /repos/{owner}/{repo}/collaborators/{username}', {
         owner: owner,

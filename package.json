@@ -11,6 +11,6 @@
   "author": "Jordan Harrison",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.21.1"
+    "@octokit/request": "^5.4.14"
   }
 }

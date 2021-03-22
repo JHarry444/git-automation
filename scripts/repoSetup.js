@@ -1,72 +1,61 @@
-const axios = require('axios');
+const { request } = require('@octokit/request');
 
-const setup = (apiKey, user, template, details, private = false) => {
+const setup = (apiKey, owner, template, details, private = false) => {
     details.forEach(async username => {
         try {
-            await createRepo(apiKey, user, template, username, private);
-            await addCollaborator(apiKey, user, username);
-            if (!private) await setRules(apiKey, user, username);
+            await createRepo(apiKey, owner, template, username, private);
+            await addCollaborator(apiKey, owner, username);
+            if (!private) await setRules(apiKey, owner, username);
         } catch (err) {
             console.log(err);
         }
     });
 }
 
-const createRepo = (apiKey, user, template, username, private) => {
-    const settings = {
-        "async": true,
-        "crossDomain": true,
-        "method": "POST",
-        "url": `https://api.github.com/repos/${user}/${template}/generate`,
-        "headers": {
-            "Accept": "application/vnd.github.baptiste-preview+json",
-            "Authorization": "token " + apiKey,
-            "Content-Type": "application/json"
+const createRepo = (apiKey, owner, template, username, private) => {
+    return request('POST /repos/{template_owner}/{template_repo}/generate', {
+        name: getRepoFromUser(username),
+        owner: owner,
+        template_owner: owner,
+        template_repo: template,
+        private: private,
+        mediaType: {
+            previews: [
+                'baptiste'
+            ]
         },
-        "data": JSON.stringify({
-            "owner": user,
-            "name": `${getRepoFromUser(username)}`,
-            "description": "Assessment Repository",
-            "private": private
-        })
-    };
-    return axios(settings);
+        headers: {
+            authorization: `token ${apiKey}`
+        }
+    });
 }
 
 const getRepoFromUser = (user) => {
     return `${user}_assessment`;
 }
 
-const addCollaborator = (apiKey, user, username) => {
-    const settings = {
-        "async": true,
-        "crossDomain": true,
-        "url": `https://api.github.com/repos/${user}/${getRepoFromUser(username)}/collaborators/${username}?permission=push`,
-        "method": "PUT",
-        "headers": {
-            "Accept": "application/vnd.github.hellcat-preview+json",
-            "Authorization": "token " + apiKey
+const addCollaborator = (apiKey, owner, username) => {
+    return request('PUT /repos/{owner}/{repo}/collaborators/{username}', {
+        owner: owner,
+        repo: getRepoFromUser(username),
+        username: username,
+        permission: 'push',
+        headers: {
+            authorization: "token " + apiKey
         }
-    }
-
-    return axios(settings);
+    });
 }
 
-const setRules = (apiKey, user, username) => {
-    const settings = {
-        async: true,
-        crossDomain: true,
-        url: `https://api.github.com/repos/${user}/${getRepoFromUser(username)}/branches/master/protection`,
-        method: "PUT",
+const setRules = (apiKey, owner, username) => {
+    return request('PUT /repos/{owner}/{repo}/branches/{branch}/protection', {
+        owner: owner,
+        repo: getRepoFromUser(username),
+        branch: 'master',
         headers: {
-            "Accept": "application/vnd.github.luke-cage-preview+json",
-            "Authorization": `token ${apiKey}`,
-            "Content-Type": "application/json"
-        },
-        processData: false,
-        data: JSON.stringify({ required_status_checks: null, enforce_admins: true, required_pull_request_reviews: { dismiss_stale_reviews: true, require_code_owner_reviews: true, required_approving_review_count: 1 }, restrictions: null })
-    };
-    return axios(settings);
+            authorization: "token " + apiKey,
+            accept: "application/vnd.github.v3+json"
+        }
+    });
 }
 
 module.exports = setup

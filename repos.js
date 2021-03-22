@@ -1,15 +1,18 @@
 const axios = require('axios');
 
-function setup(apiKey, user, template, details) {
-    details.forEach(username => {
-        createRepo(apiKey, user, template, username)
-            .then(() => addCollaborator(apiKey, user, username))
-            .then(() => setRules(apiKey, user, username))
-            .catch(err => console.warn('Warning -', err));
+const setup = (apiKey, user, template, details, private = false) => {
+    details.forEach(async username => {
+        try {
+            await createRepo(apiKey, user, template, username, private);
+            await addCollaborator(apiKey, user, username);
+            if (!private) await setRules(apiKey, user, username);
+        } catch (err) {
+            console.log(err);
+        }
     });
 }
 
-function createRepo(apiKey, user, template, username) {
+const createRepo = (apiKey, user, template, username, private) => {
     const settings = {
         "async": true,
         "crossDomain": true,
@@ -24,17 +27,17 @@ function createRepo(apiKey, user, template, username) {
             "owner": user,
             "name": `${getRepoFromUser(username)}`,
             "description": "Assessment Repository",
-            "private": false
+            "private": private
         })
     };
     return axios(settings);
 }
 
-function getRepoFromUser(user) {
+const getRepoFromUser = (user) => {
     return `${user}_assessment`;
 }
 
-function addCollaborator(apiKey, user, username) {
+const addCollaborator = (apiKey, user, username) => {
     const settings = {
         "async": true,
         "crossDomain": true,
@@ -49,7 +52,7 @@ function addCollaborator(apiKey, user, username) {
     return axios(settings);
 }
 
-function setRules(apiKey, user, username) {
+const setRules = (apiKey, user, username) => {
     const settings = {
         async: true,
         crossDomain: true,
@@ -65,3 +68,5 @@ function setRules(apiKey, user, username) {
     };
     return axios(settings);
 }
+
+module.exports = setup

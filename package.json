@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "setup": "node index.js",
+    "tear-down": "node index.js -d",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Jordan Harrison",
